@@ -104,7 +104,8 @@ plot_cnv <- function(infercnv_obj,
                      dynamic_resize=0,
                      ref_contig = NULL,
                      write_expr_matrix=FALSE,
-                     useRaster=TRUE) {
+                     useRaster=TRUE,
+                     annotation_group_colors=NULL) {
 
 
     # arg validations
@@ -357,7 +358,8 @@ plot_cnv <- function(infercnv_obj,
                           layout_lmat=force_layout[["lmat"]],
                           layout_lhei=force_layout[["lhei"]],
                           layout_lwid=force_layout[["lwid"]],
-                          useRaster=useRaster)
+                          useRaster=useRaster,
+                          annotation_group_colors=annotation_group_colors)
     obs_data <- NULL
 
     if(!is.null(ref_idx)){
@@ -453,7 +455,8 @@ plot_cnv <- function(infercnv_obj,
                                   layout_lmat=NULL,
                                   layout_lhei=NULL,
                                   layout_lwid=NULL,
-                                  useRaster=useRaster) {
+                                  useRaster=useRaster,
+                                  annotation_group_colors=NULL) {
 
     flog.info("plot_cnv_observation:Start")
     flog.info(paste("Observation data size: Cells=",
@@ -698,10 +701,20 @@ plot_cnv <- function(infercnv_obj,
     # Record locations of seperations
 
     # Make colors based on groupings
+    if (is.null(annotation_group_colors)) {
+      grouping_color_palette <- get_group_color_palette()(length(table(hcl_obs_annotations_groups)))
+    } else {
+      grouping_color_palette <- annotation_group_colors
+    }
+    # grouping_color_palette <- ifelse(is.null(annotation_group_colors)) annotation_group_colors 
     row_groupings <- get_group_color_palette()(length(table(split_groups)))[split_groups]
-    row_groupings <- cbind(row_groupings, get_group_color_palette()(length(table(hcl_obs_annotations_groups)))[hcl_obs_annotations_groups])
-    annotations_legend <- cbind(obs_annotations_names, get_group_color_palette()(length(table(hcl_obs_annotations_groups))))
-
+    # row_groupings <- grouping_color_palette[split_groups]
+    row_groupings <- cbind(row_groupings, 
+                           grouping_color_palette[hcl_obs_annotations_groups])
+    # row_groupings <- cbind(row_groupings, get_group_color_palette()(length(table(hcl_obs_annotations_groups)))[hcl_obs_annotations_groups])
+    # annotations_legend <- cbind(obs_annotations_names, get_group_color_palette()(length(table(hcl_obs_annotations_groups))))
+    annotations_legend <- cbind(obs_annotations_names, annotation_group_colors)
+    
     # Make a file of coloring and groupings
     flog.info("plot_cnv_observation:Writing observation groupings/color.")
     groups_file_name <- file.path(file_base_name, sprintf("%s.observation_groupings.txt", output_filename_prefix))
